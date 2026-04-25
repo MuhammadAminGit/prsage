@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from app.llm.groq_client import ChatMessage, GroqClient
 from app.review.fetcher import ReviewablePR
 from app.review.output import (
+    ReviewParseError,
     ReviewResult,
     filter_to_reviewable_lines,
     parse_llm_output,
@@ -66,7 +67,16 @@ async def review_pr(reviewable: ReviewablePR, groq: GroqClient) -> ReviewRun:
     ]
 
     completion = await groq.chat(messages, json_object=True, temperature=0.2)
-    parsed = parse_llm_output(completion.content)
+    try:
+        parsed = parse_llm_output(completion.content)
+    except ReviewParseError as e:
+        log.warning(
+            "could not parse LLM output for pr=%s/%s: %s",
+            reviewable.pr.repo_full_name,
+            reviewable.pr.number,
+            e,
+        )
+        parsed = ReviewResult(summary="", comments=[])
     filtered = filter_to_reviewable_lines(parsed, reviewable.files)
 
     duration_ms = int((time.monotonic() - start) * 1000)

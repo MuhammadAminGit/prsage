@@ -9,8 +9,12 @@ orchestration code.
 
 from __future__ import annotations
 
+import logging
+
 from app.github.types import PRFile, PullRequest
 from app.review.diff import parse_patch, render_for_llm
+
+log = logging.getLogger("prsage.review.prompts")
 
 
 SYSTEM_PROMPT = """\
@@ -62,7 +66,14 @@ def build_user_prompt(pr: PullRequest, files: list[PRFile]) -> str:
     for f in files:
         if not f.patch:
             continue
-        hunks = parse_patch(f.patch)
+        try:
+            hunks = parse_patch(f.patch)
+        except Exception as e:
+            log.warning("skipping unparseable patch for %s: %s", f.filename, e)
+            continue
+        if not hunks:
+            log.info("skipping %s: no hunks parsed", f.filename)
+            continue
         rendered = render_for_llm(f.filename, hunks)
         sections.append(
             f"### `{f.filename}` ({f.status}, +{f.additions} -{f.deletions})\n\n```diff\n{rendered}\n```"

@@ -151,6 +151,25 @@ async def run_review(
         )
         return
 
+    if not reviewable.files:
+        skipped_summary = ", ".join(
+            f"{name} ({reason})" for name, reason in reviewable.skipped[:5]
+        )
+        log.info(
+            "no reviewable files for pr=%s#%d skipped=%s",
+            repo_full_name,
+            pr_number,
+            skipped_summary or "(none)",
+        )
+        await _finalize_review(
+            review_id,
+            status="skipped",
+            pr_title=reviewable.pr.title,
+            pr_url=reviewable.pr.html_url,
+            summary="No reviewable files (all binary, lockfiles, or oversized).",
+        )
+        return
+
     try:
         async with GroqClient(api_key=settings.groq_api_key, model=settings.groq_model) as g:
             run = await review_pr(reviewable, g)

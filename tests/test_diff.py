@@ -93,3 +93,13 @@ def test_render_for_llm_shows_line_numbers():
     for line in rendered.splitlines():
         if line.startswith("-"):
             assert "--" in line
+
+
+def test_empty_patch_yields_no_hunks():
+    assert parse_patch("") == []
+
+
+def test_garbage_patch_does_not_raise():
+    """Patch text with no valid hunk headers parses to an empty hunk list."""
+    patch = "this is not a real diff\nfoo bar\n"
+    assert parse_patch(patch) == []
