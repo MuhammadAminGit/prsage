@@ -7,41 +7,17 @@ through ``app.github.auth.get_installation_token``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import httpx
 
 from app.github.auth import GITHUB_API_BASE, get_installation_token
+from app.github.types import PRFile, PullRequest
+
+__all__ = ["GitHubClient", "PRFile", "PullRequest"]
 
 DEFAULT_TIMEOUT = 15.0
-
-
-@dataclass
-class PRFile:
-    """A single file changed in a PR, plus its patch (unified diff hunks)."""
-
-    filename: str
-    status: str  # added, modified, removed, renamed
-    additions: int
-    deletions: int
-    changes: int
-    patch: str | None  # may be None for binary or very large files
-    sha: str  # blob sha at the head commit
-
-
-@dataclass
-class PullRequest:
-    number: int
-    title: str
-    body: str
-    head_sha: str
-    base_sha: str
-    repo_full_name: str
-    user_login: str
-    html_url: str
-    draft: bool
 
 
 class GitHubClient:
