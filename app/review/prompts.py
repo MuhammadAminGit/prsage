@@ -11,13 +11,14 @@ from __future__ import annotations
 
 import logging
 
+from app.config import get_settings
 from app.github.types import PRFile, PullRequest
 from app.review.diff import parse_patch, render_for_llm
 
 log = logging.getLogger("prsage.review.prompts")
 
 
-SYSTEM_PROMPT = """\
+_BASE_SYSTEM_PROMPT = """\
 You are a thoughtful senior engineer doing a code review on a pull request.
 
 Your job is to flag the things a careful reviewer would actually flag. Real
@@ -53,6 +54,23 @@ Be honest. An empty review is better than padded one. Do not invent issues.
 Do not make up files or line numbers. Only refer to lines that appear with a
 `+` marker in the diff you were shown.
 """
+
+
+def build_system_prompt() -> str:
+    """Return the system prompt with any configured style notes appended."""
+    notes = get_settings().review_style_notes.strip()
+    if not notes:
+        return _BASE_SYSTEM_PROMPT
+    return (
+        _BASE_SYSTEM_PROMPT
+        + "\n\nAdditional reviewer notes for this deployment:\n"
+        + notes.strip()
+        + "\n"
+    )
+
+
+# Backwards-compatible alias so existing imports keep working.
+SYSTEM_PROMPT = _BASE_SYSTEM_PROMPT
 
 
 def build_user_prompt(pr: PullRequest, files: list[PRFile]) -> str:

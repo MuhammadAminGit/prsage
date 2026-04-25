@@ -33,6 +33,16 @@ class Settings(BaseSettings):
         description="Default Groq model ID.",
     )
 
+    # Review behavior
+    review_style_notes: str = Field(
+        default="",
+        description=(
+            "Extra instructions appended to the reviewer system prompt. "
+            "Use this to nudge tone (e.g. 'be especially blunt about security') "
+            "or to focus reviews on specific concerns."
+        ),
+    )
+
     # Server
     host: str = "0.0.0.0"
     port: int = 8000

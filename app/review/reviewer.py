@@ -20,7 +20,7 @@ from app.review.output import (
     filter_to_reviewable_lines,
     parse_llm_output,
 )
-from app.review.prompts import SYSTEM_PROMPT, build_user_prompt
+from app.review.prompts import build_system_prompt, build_user_prompt
 
 log = logging.getLogger("prsage.review")
 
@@ -62,7 +62,7 @@ async def review_pr(reviewable: ReviewablePR, groq: GroqClient) -> ReviewRun:
 
     user_prompt = build_user_prompt(reviewable.pr, reviewable.files)
     messages = [
-        ChatMessage(role="system", content=SYSTEM_PROMPT),
+        ChatMessage(role="system", content=build_system_prompt()),
         ChatMessage(role="user", content=user_prompt),
     ]
 
