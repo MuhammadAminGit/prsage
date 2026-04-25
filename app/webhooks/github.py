@@ -11,9 +11,10 @@ from __future__ import annotations
 import json
 import logging
 
-from fastapi import APIRouter, Header, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 
 from app.config import get_settings
+from app.review.runner import run_review
 from app.webhooks.signature import (
     InvalidSignatureError,
     SIGNATURE_HEADER,
@@ -31,6 +32,7 @@ REVIEWABLE_PR_ACTIONS = {"opened", "synchronize", "reopened", "ready_for_review"
 @router.post("/github", status_code=status.HTTP_202_ACCEPTED)
 async def github_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     x_github_event: str | None = Header(default=None, alias="X-GitHub-Event"),
     x_github_delivery: str | None = Header(default=None, alias="X-GitHub-Delivery"),
     x_hub_signature_256: str | None = Header(default=None, alias=SIGNATURE_HEADER),
@@ -66,14 +68,24 @@ async def github_webhook(
         pr = payload.get("pull_request", {})
         repo = payload.get("repository", {})
         installation_id = payload.get("installation", {}).get("id")
+
+        if not installation_id or not repo.get("full_name") or not pr.get("number"):
+            log.warning("missing fields in pull_request payload, ignoring")
+            return {"status": "ignored"}
+
         log.info(
-            "pull_request review-worthy: repo=%s pr=#%s action=%s installation=%s",
-            repo.get("full_name"),
-            pr.get("number"),
+            "queueing review repo=%s pr=#%s action=%s installation=%s",
+            repo["full_name"],
+            pr["number"],
             action,
             installation_id,
         )
-        # TODO: enqueue review job (Day 4)
+        background_tasks.add_task(
+            run_review,
+            installation_id=int(installation_id),
+            repo_full_name=repo["full_name"],
+            pr_number=int(pr["number"]),
+        )
         return {"status": "queued"}
 
     return {"status": "ignored"}
