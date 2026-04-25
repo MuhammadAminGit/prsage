@@ -25,6 +25,14 @@ class Settings(BaseSettings):
         default=Path("./private-key.pem"),
         description="Path to the GitHub App's PEM private key.",
     )
+    github_app_private_key_pem: str = Field(
+        default="",
+        description=(
+            "Optional inline PEM contents. If set, the contents are written to "
+            "github_app_private_key_path on startup. Useful for hosts where "
+            "shipping a file is awkward (Railway, Fly, etc.)."
+        ),
+    )
 
     # LLM provider
     groq_api_key: str = Field(default="", description="Groq API key for LLM calls.")
