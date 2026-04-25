@@ -2,7 +2,14 @@
 
 AI code reviewer that runs on your GitHub pull requests. Installs as a GitHub App, reads the diff, and posts inline review comments using an LLM.
 
-> Status: early development. Building in public toward a v0.1.
+> Status: v0.1. Built in the open. PRs and issues welcome.
+
+## See it in action
+
+- **Demo repo:** [MuhammadAminGit/prsage-demo](https://github.com/MuhammadAminGit/prsage-demo). Open a PR against `main` from the `feature/buggy-changes` branch and prsage will post inline comments within seconds.
+- **Landing page:** _coming soon_ (Vercel deploy pending — see `scripts/DEPLOY.md`)
+- **API:** _coming soon_ (Railway deploy pending — see `scripts/DEPLOY.md`)
+- **What it catches:** [EXAMPLES.md](./EXAMPLES.md)
 
 ## What it does
 
@@ -73,14 +80,14 @@ To test the full webhook flow locally, you'll need a public tunnel like `ngrok` 
 ## Roadmap
 
 - [x] Project scaffold
-- [ ] GitHub App authentication (JWT + installation tokens)
-- [ ] Webhook handler with signature verification
-- [ ] Diff fetcher and parser
-- [ ] LLM review pipeline
-- [ ] Inline comment posting
-- [ ] Persistence layer (Postgres)
-- [ ] Landing page
-- [ ] Public deploy
+- [x] GitHub App authentication (JWT + installation tokens)
+- [x] Webhook handler with signature verification
+- [x] Diff fetcher and parser
+- [x] LLM review pipeline
+- [x] Inline comment posting
+- [x] Persistence layer (Postgres / SQLite)
+- [x] Landing page
+- [ ] Public deploy (in progress)
 - [ ] Tag v0.1.0
 
 ## License
