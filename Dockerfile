@@ -14,7 +14,10 @@ RUN pip install \
         "uvicorn[standard]>=0.32" \
         "pydantic-settings>=2.6" \
         "httpx>=0.28" \
-        "pyjwt[crypto]>=2.10"
+        "pyjwt[crypto]>=2.10" \
+        "sqlalchemy[asyncio]>=2.0" \
+        "aiosqlite>=0.20" \
+        "asyncpg>=0.30"
 
 COPY app/ ./app/
 
