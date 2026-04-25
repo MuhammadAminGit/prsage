@@ -1,0 +1,16 @@
+@@ -1,5 +1,6 @@
+ import os
+ import sys
++import logging
+
+ def hello():
+     print("hi")
+@@ -42,7 +43,9 @@ class Server:
+     def start(self):
+-        self.bind()
+-        self.listen()
++        self._setup()
++        self.bind(retries=3)
++        self.listen(backlog=128)
++        self._notify_ready()
+         return self.is_running
