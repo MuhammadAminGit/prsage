@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
 from app import __version__
+from app.config import get_settings
+
+settings = get_settings()
 
 app = FastAPI(
     title="prsage",
@@ -16,4 +19,8 @@ async def health() -> dict[str, str]:
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    return {"name": "prsage", "version": __version__}
+    return {
+        "name": "prsage",
+        "version": __version__,
+        "model": settings.groq_model,
+    }
