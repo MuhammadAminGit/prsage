@@ -22,6 +22,18 @@ def stable_secret(monkeypatch):
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def stub_run_review(monkeypatch):
+    """Replace the real review runner with a no-op so the webhook test
+    doesn't try to hit GitHub or the database in the background task."""
+
+    async def _noop(**kwargs):
+        return None
+
+    monkeypatch.setattr("app.webhooks.github.run_review", _noop)
+    yield
+
+
 def _post(body: bytes, secret: str, event: str, sign: bool = True):
     headers = {
         "X-GitHub-Event": event,

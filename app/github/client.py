@@ -3,10 +3,15 @@
 Scoped to what prsage needs: read PR metadata, fetch the changed files (with
 patches), and post review comments. Authentication is handled per-installation
 through ``app.github.auth.get_installation_token``.
+
+Transient errors (429, 5xx) are retried with exponential backoff. We never
+retry 4xx that aren't 429 — those are the caller's bug, not GitHub's.
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +22,50 @@ from app.github.types import PRFile, PullRequest
 
 __all__ = ["GitHubClient", "PRFile", "PullRequest"]
 
+log = logging.getLogger("prsage.github")
+
 DEFAULT_TIMEOUT = 15.0
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = (1, 3, 7)
+TRANSIENT_STATUSES = {429, 500, 502, 503, 504}
+
+
+class GitHubAPIError(Exception):
+    """Raised when GitHub returns a non-retriable error."""
+
+
+async def _request_with_retry(
+    client: httpx.AsyncClient,
+    method: str,
+    url: str,
+    *,
+    headers: dict[str, str],
+    json: Any | None = None,
+) -> httpx.Response:
+    last_exc: Exception | None = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            resp = await client.request(method, url, headers=headers, json=json)
+        except httpx.HTTPError as e:
+            last_exc = e
+            log.warning("github request error attempt=%d url=%s: %s", attempt, url, e)
+            if attempt < MAX_RETRIES - 1:
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS[attempt])
+            continue
+
+        if resp.status_code in TRANSIENT_STATUSES and attempt < MAX_RETRIES - 1:
+            log.warning(
+                "github transient %s attempt=%d url=%s",
+                resp.status_code,
+                attempt,
+                url,
+            )
+            await asyncio.sleep(RETRY_BACKOFF_SECONDS[attempt])
+            continue
+
+        return resp
+
+    raise GitHubAPIError(f"github request failed after retries: {last_exc}")
 
 
 class GitHubClient:
@@ -63,15 +111,17 @@ class GitHubClient:
     async def _get(self, path: str, *, accept: str = "application/vnd.github+json") -> Any:
         assert self._client is not None
         headers = await self._headers(accept=accept)
-        resp = await self._client.get(f"{GITHUB_API_BASE}{path}", headers=headers)
+        resp = await _request_with_retry(
+            self._client, "GET", f"{GITHUB_API_BASE}{path}", headers=headers
+        )
         resp.raise_for_status()
         return resp.json() if accept.endswith("+json") else resp.text
 
     async def _post(self, path: str, body: dict[str, Any]) -> Any:
         assert self._client is not None
         headers = await self._headers()
-        resp = await self._client.post(
-            f"{GITHUB_API_BASE}{path}", headers=headers, json=body
+        resp = await _request_with_retry(
+            self._client, "POST", f"{GITHUB_API_BASE}{path}", headers=headers, json=body
         )
         resp.raise_for_status()
         return resp.json()
