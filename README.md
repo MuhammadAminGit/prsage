@@ -6,9 +6,27 @@ AI code reviewer that runs on your GitHub pull requests. Installs as a GitHub Ap
 
 ## See it in action
 
-- **Demo repo:** [MuhammadAminGit/prsage-demo](https://github.com/MuhammadAminGit/prsage-demo). Open a PR against `main` from the `feature/buggy-changes` branch and prsage will post inline comments within seconds.
-- **Landing page:** _coming soon_ (Vercel deploy pending — see `scripts/DEPLOY.md`)
-- **API:** _coming soon_ (Railway deploy pending — see `scripts/DEPLOY.md`)
+prsage was run against [PR #1 on prsage-demo](https://github.com/MuhammadAminGit/prsage-demo/pull/1), a deliberately buggy pull request. It posted **6 inline comments in 1.87 seconds** (1635 tokens), catching every real issue without false positives.
+
+![Files changed view with prsage comments](docs/screenshots/files-changed-overview.png)
+
+### Sample comments
+
+A critical security issue caught on a hardcoded API key:
+
+![Hardcoded API key comment](docs/screenshots/comment-hardcoded-api-key.png)
+
+SQL injection via string concatenation, also critical:
+
+![SQL injection comment](docs/screenshots/comment-sql-injection.png)
+
+A lower-severity warning about a bare `except` clause:
+
+![Bare except comment](docs/screenshots/comment-bare-except.png)
+
+### Try it yourself
+
+- **Demo repo:** [MuhammadAminGit/prsage-demo](https://github.com/MuhammadAminGit/prsage-demo). Open a PR against `master` from `feature/buggy-changes` and prsage will post inline comments.
 - **What it catches:** [EXAMPLES.md](./EXAMPLES.md)
 
 ## What it does
