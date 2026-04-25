@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>prsage — AI code reviewer for GitHub PRs</title>
+  <meta
+    name="description"
+    content="Install prsage on a repo and an LLM reviews every pull request. Inline comments, in seconds."
+  />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <span class="badge">case study · open source</span>
+      <h1>
+        AI code review<br />
+        on every pull request.
+      </h1>
+      <p class="lede">
+        Install prsage on a repo. Open a PR. Get inline comments back within
+        seconds. No manual triggers, no plugins, no IDE config.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/MuhammadAminGit/prsage" target="_blank" rel="noopener">
+          View source on GitHub
+        </a>
+        <a class="btn ghost" href="#how">How it works</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <h2>What it does</h2>
+      <p>
+        prsage runs as a GitHub App. When a pull request opens, it pulls the
+        diff, sends it to an LLM tuned for code review, and posts inline
+        comments on the lines worth flagging. Bugs, security holes, missing
+        tests, real readability issues. No nitpicks.
+      </p>
+      <p>
+        The bot only comments. Humans still merge.
+      </p>
+    </div>
+  </section>
+
+  <section id="how" class="section dim">
+    <div class="container">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-num">1</span>
+          <div>
+            <h3>PR opens</h3>
+            <p>You push a branch and open a pull request like normal.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div>
+            <h3>prsage reads the diff</h3>
+            <p>
+              The webhook lands, signature gets verified, and the diff is
+              pulled via the GitHub API.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div>
+            <h3>LLM review pass</h3>
+            <p>
+              The diff goes to Groq's Llama 3.3 70B with a tuned reviewer
+              prompt. Output is structured JSON.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <div>
+            <h3>Inline comments posted</h3>
+            <p>
+              Each comment is verified to land on a line that was actually
+              added in the diff before being posted.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Stack</h2>
+      <p class="stack">
+        Python · FastAPI · SQLAlchemy · PostgreSQL · Groq (Llama 3.3 70B) ·
+        GitHub Apps · Railway · Vercel
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>
+        Built by
+        <a href="https://github.com/MuhammadAminGit" target="_blank" rel="noopener"
+          >Muhammad Amin</a
+        >
+        · MIT License ·
+        <a href="https://github.com/MuhammadAminGit/prsage" target="_blank" rel="noopener"
+          >Source</a
+        >
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
